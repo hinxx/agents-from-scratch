@@ -368,6 +368,27 @@ def lesson_15_self_reflection():
     print(f"\nFinal Approved Output:\n{final_output}")
 
 
+def lesson_16_context_management():
+    """Lesson 16: Context Management"""
+    print("\n" + "="*50)
+    print("LESSON 16: Context Management (Summarization)")
+    print("="*50)
+    
+    agent = Agent(MODEL)
+    
+    # Simulate a long, multi-turn conversation
+    conversation = [
+        "Hi, I'm planning a trip to Japan.",
+        "I want to visit Tokyo, Kyoto, and Osaka.",
+        "I love eating sushi and visiting ancient temples.",
+        "I will be traveling for 14 days in October.",
+        "Can you summarize my trip profile so far?"
+    ]
+    
+    # Set max_history to 2 to force a summarization mid-conversation
+    agent.run_with_context_management(conversation, max_history=2)
+
+
 def main():
     """Run all lesson examples"""
     print("\n" + "#"*50)
@@ -393,6 +414,7 @@ def main():
         # lesson_13_hitl()  # Commented out by default because it blocks execution via input()
         lesson_14_multi_agent()
         lesson_15_self_reflection()
+        lesson_16_context_management()
         
         print("\n" + "="*50)
         print("All examples completed!")

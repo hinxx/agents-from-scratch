@@ -20,6 +20,7 @@ Lesson progression:
 13: Human-in-the-Loop (HITL)
 14: Multi-Agent Orchestration
 15: Self-Reflection
+16: Context Management
 """
 
 from typing import Any
@@ -640,6 +641,84 @@ Provide a completely revised response that fixes all issues mentioned in the fee
             
         print("Max revisions reached.")
         return current_output
+
+    # ============================================================
+    # LESSON 16: Context Management
+    # ============================================================
+    
+    def summarize_history(self, history: list[str]) -> str | None:
+        """
+        Summarize a list of past interactions to save context window space.
+        Lesson 16 version.
+        """
+        history_text = "\n".join(history)
+        prompt = f"""{self.system_prompt}
+
+You are an expert at information compression. Summarize the following conversation history.
+Capture all the key facts, decisions, and outcomes, but make it as concise as possible.
+
+History to summarize:
+{history_text}
+
+CRITICAL INSTRUCTIONS:
+1. Respond with ONLY valid JSON
+2. Required JSON format: {{"summary": "the dense summary text"}}
+
+Response (JSON only):"""
+        
+        for attempt in range(3):
+            response = self.llm.generate(prompt, temperature=0.0)
+            parsed = extract_json_from_text(response)
+            if parsed and "summary" in parsed:
+                return parsed["summary"]
+        return None
+
+    def run_with_context_management(self, turns: list[str], max_history: int = 3) -> list[str]:
+        """
+        Process a long conversation, summarizing old context when it grows too large.
+        Lesson 16 version.
+        """
+        current_history = []
+        results = []
+        
+        for turn in turns:
+            print(f"\nUser: {turn}")
+            
+            # 1. Check if we need to compress context
+            if len(current_history) > max_history:
+                print(f"[Context Manager] History exceeded {max_history} items. Summarizing older items...")
+                # Keep the most recent item, summarize the rest
+                to_summarize = current_history[:-1]
+                kept_recent = current_history[-1]
+                
+                summary = self.summarize_history(to_summarize)
+                if summary:
+                    print(f"[Context Manager] New Compressed Summary: {summary}")
+                    current_history = [f"SUMMARY OF PAST: {summary}", kept_recent]
+                else:
+                    print("[Context Manager] Summarization failed, proceeding with full history.")
+            
+            # 2. Build the context-aware prompt
+            context_str = "\n".join(current_history) if current_history else "No previous context."
+            
+            prompt = f"""{self.system_prompt}
+            
+Previous Context:
+{context_str}
+
+Current User Request: {turn}
+
+Provide a helpful response based on the context and the request."""
+            
+            # 3. Generate response
+            response = self.simple_generate(prompt)
+            print(f"Agent: {response}")
+            
+            # 4. Add the interaction to history
+            current_history.append(f"User: {turn} | Agent: {response}")
+            results.append(response)
+            
+        return results
 
     # ============================================================
     # MAIN RUN METHOD (evolves across lessons)
