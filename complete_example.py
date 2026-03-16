@@ -389,6 +389,17 @@ def lesson_16_context_management():
     agent.run_with_context_management(conversation, max_history=2)
 
 
+def lesson_17_dynamic_tools():
+    """Lesson 17: Dynamic Tool Creation"""
+    print("\n" + "="*50)
+    print("LESSON 17: Dynamic Tool Creation (Code Interpreter)")
+    print("="*50)
+    
+    agent = Agent(MODEL)
+    # A math task that LLMs hallucinate, but Python solves perfectly
+    agent.run_dynamic_tool("Calculate the 15th Fibonacci number and print it.")
+
+
 def main():
     """Run all lesson examples"""
     print("\n" + "#"*50)
@@ -415,6 +426,7 @@ def main():
         lesson_14_multi_agent()
         lesson_15_self_reflection()
         lesson_16_context_management()
+        lesson_17_dynamic_tools()
         
         print("\n" + "="*50)
         print("All examples completed!")

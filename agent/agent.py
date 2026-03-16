@@ -21,6 +21,7 @@ Lesson progression:
 14: Multi-Agent Orchestration
 15: Self-Reflection
 16: Context Management
+17: Dynamic Tool Creation
 """
 
 from typing import Any
@@ -719,6 +720,66 @@ Provide a helpful response based on the context and the request."""
             results.append(response)
             
         return results
+
+    # ============================================================
+    # LESSON 17: Dynamic Tool Creation
+    # ============================================================
+    
+    def run_dynamic_tool(self, task: str) -> dict | None:
+        """
+        Write and execute a Python script to solve a problem.
+        Lesson 17 version.
+        """
+        import sys
+        import io
+        
+        print(f"Task: {task}")
+        prompt = f"""{self.system_prompt}
+
+You are an expert Python programmer. To solve the user's task, write a Python script.
+
+CRITICAL INSTRUCTIONS:
+1. Respond with ONLY valid JSON
+2. Required JSON format: {{"code": "python code string here"}}
+3. The code MUST use print() to output the final answer so it can be captured.
+4. Handle your own imports if you need standard library modules (like math).
+
+Task: {task}
+
+Response (JSON only):"""
+
+        for attempt in range(3):
+            response = self.llm.generate(prompt, temperature=0.0)
+            parsed = extract_json_from_text(response)
+            
+            if parsed and "code" in parsed:
+                code = parsed["code"]
+                print(f"\n[Generated Code]:\n```python\n{code}\n```")
+                
+                # Capture stdout to get the script's print statements
+                captured_output = io.StringIO()
+                original_stdout = sys.stdout
+                sys.stdout = captured_output
+                
+                error = None
+                try:
+                    # WARNING: exec() is dangerous! In production, use sandboxed containers.
+                    exec(code, {"__builtins__": __builtins__}, {})
+                except Exception as e:
+                    error = str(e)
+                finally:
+                    sys.stdout = original_stdout
+                
+                output = captured_output.getvalue().strip()
+                
+                if error:
+                    print(f"\n[Execution Failed]: {error}")
+                    return {"code": code, "success": False, "error": error}
+                else:
+                    print(f"\n[Execution Output]:\n{output}")
+                    return {"code": code, "success": True, "output": output}
+                    
+        return None
 
     # ============================================================
     # MAIN RUN METHOD (evolves across lessons)

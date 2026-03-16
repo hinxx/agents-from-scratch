@@ -63,11 +63,12 @@ Here is how the code walks you down that path:
 *   **Phase 4: Observability (Lessons 11-12)**
     *   *Engineering discipline.* Now that you have a complex system, how do you change a prompt without breaking it? You introduce Evals (Regression Testing) and Telemetry to monitor what the loop is doing at runtime.
 
-*   **Phase 5: Advanced Patterns (Lessons 13-16)**
+*   **Phase 5: Advanced Patterns (Lessons 13-17)**
     *   *Trust but verify.* You add a Human-in-the-Loop (HITL) pause mechanism, demonstrating that explicit state makes manual intervention simple.
     *   *Specialization.* You orchestrate multiple agents. Instead of one confused mega-prompt, you separate the "planner" from the "doer" using standard Object-Oriented Programming.
     *   *Self-Reflection.* You add a critique step to the agent loop. The agent evaluates its own output against the original goal and actively corrects its mistakes before returning a final result.
     *   *Context Management.* You add lifecycle hooks to monitor and compress conversation history when it grows too large, preventing the LLM from crashing or losing focus.
+    *   *Dynamic Tools.* You allow the agent to write and execute its own Python code to solve problems that predefined tools cannot handle, effectively acting as a Code Interpreter.
 
 By manually coding each of these steps using simple Python constructs (while loops, try/except blocks, JSON parsing), you strip away the hype. You learn that an AI agent is simply a probabilistic text generator wrapped in rigorous, deterministic software engineering.
 
@@ -292,3 +293,11 @@ It explicitly outputs a JSON payload deciding whether to accept the result (`"st
 As an agent loop continues to run and take actions, the prompt (its context) grows continuously. Since all LLMs have a fixed token limit (Context Window), an unmanaged agent will eventually crash or suffer from "attention degradation" (forgetting its original instructions). Lesson 16 solves this with **Context Management Hooks**.
 
 By monitoring the size of the agent's history array, we can set a threshold. Once the threshold is breached, the agent pauses its normal execution to run a "summarization hook"—using the LLM to compress the oldest parts of its history into a dense summary. It then replaces the verbose history with this short summary. This allows the agent to essentially run forever, freeing up space in the context window while still retaining critical facts.
+
+---
+
+## 15. The Code Interpreter: Dynamic Tool Creation (Lesson 17)
+
+In earlier lessons, we gave the agent static, hardcoded tools (like a calculator). However, it is impossible to predict every function an agent might need. Lesson 17 solves this with **Dynamic Tool Creation**.
+
+By leveraging the "Structure Beats Cleverness" philosophy, we force the LLM to write a Python script inside a strict JSON payload. The agent's software engine then extracts this string and runs it dynamically using Python's `exec()`, capturing the standard output. This demystifies the "magic" behind commercial features like Advanced Data Analysis. By offloading complex deterministic logic (like math, data sorting, or file parsing) to an actual code interpreter, the LLM stops predicting *answers* and successfully predicts the *algorithms* needed to find them.

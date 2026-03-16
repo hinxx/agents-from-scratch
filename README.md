@@ -51,6 +51,7 @@ This repository builds one continuously evolving agent across 12 lessons:
 | 14 | Multi-Agent Orchestration | [lessons/14_multi_agent.md](lessons/14_multi_agent.md) |
 | 15 | Self-Reflection (course correction) | [lessons/15_self_reflection.md](lessons/15_self_reflection.md) |
 | 16 | Context Window Management | [lessons/16_context_management.md](lessons/16_context_management.md) |
+| 17 | Dynamic Tool Creation | [lessons/17_dynamic_tools.md](lessons/17_dynamic_tools.md) |
 
 ## Who This Is For
 
@@ -153,7 +154,7 @@ The curriculum is designed to build understanding gradually:
 - Lessons 4-6: Agency (decisions, tools, loops)
 - Lessons 7-10: Intelligence (memory, planning, execution)
 - Lessons 11-12: Observability (evals, telemetry)
-- Lessons 13-16: Advanced (HITL, multi-agent, reflection, context)
+- Lessons 13-17: Advanced (HITL, multi-agent, reflection, context, dynamic tools)
 
 ## Contributing
 
