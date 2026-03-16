@@ -321,6 +321,53 @@ def lesson_12_telemetry():
     print("View with: cat agent_telemetry.jsonl | head -5")
 
 
+def lesson_13_hitl():
+    """Lesson 13: Human-in-the-Loop (HITL)"""
+    print("\n" + "="*50)
+    print("LESSON 13: Human-in-the-Loop (HITL)")
+    print("="*50)
+    
+    agent = Agent(MODEL)
+    print("\nNote: This lesson requires human interaction. The agent will pause for approval.")
+    
+    results = agent.run_hitl_loop("Help me analyze and delete some old files", max_steps=2)
+    print(f"\nFinal Execution results: {results}")
+
+
+def lesson_14_multi_agent():
+    """Lesson 14: Multi-Agent Orchestration"""
+    print("\n" + "="*50)
+    print("LESSON 14: Multi-Agent Orchestration")
+    print("="*50)
+    
+    manager_agent = Agent(MODEL)
+    worker_agent = Agent(MODEL)
+    
+    # Give the worker a highly specialized system prompt
+    worker_agent.system_prompt = (
+        "You are a diligent worker agent. Execute the specific task "
+        "given to you by the manager and return concise, factual results."
+    )
+    
+    results = manager_agent.run_multi_agent("Research AI agents and write a summary", worker_agent)
+    print(f"\nOrchestration Results: {results}")
+
+
+def lesson_15_self_reflection():
+    """Lesson 15: Self-Reflection"""
+    print("\n" + "="*50)
+    print("LESSON 15: Self-Reflection and Course Correction")
+    print("="*50)
+    
+    agent = Agent(MODEL)
+    
+    # Intentionally tricky task to trigger reflection and correction
+    task = "Write a haiku about Python. It MUST explicitly include the word 'Indentation'."
+    
+    final_output = agent.run_with_reflection(task)
+    print(f"\nFinal Approved Output:\n{final_output}")
+
+
 def main():
     """Run all lesson examples"""
     print("\n" + "#"*50)
@@ -341,6 +388,11 @@ def main():
         lesson_10_aot()
         lesson_11_evals()
         lesson_12_telemetry()
+        
+        # Advanced lessons
+        # lesson_13_hitl()  # Commented out by default because it blocks execution via input()
+        lesson_14_multi_agent()
+        lesson_15_self_reflection()
         
         print("\n" + "="*50)
         print("All examples completed!")

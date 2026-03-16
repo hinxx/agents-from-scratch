@@ -47,6 +47,9 @@ This repository builds one continuously evolving agent across 12 lessons:
 | 10 | AoT - Atom of Thought (dependency graphs) | [lessons/10_atom_of_thought.md](lessons/10_atom_of_thought.md) |
 | 11 | Evals (regression testing) | [lessons/11_evals.md](lessons/11_evals.md) |
 | 12 | Telemetry (runtime observability) | [lessons/12_telemetry.md](lessons/12_telemetry.md) |
+| 13 | Human-in-the-Loop (HITL) | [lessons/13_hitl.md](lessons/13_hitl.md) |
+| 14 | Multi-Agent Orchestration | [lessons/14_multi_agent.md](lessons/14_multi_agent.md) |
+| 15 | Self-Reflection (course correction) | [lessons/15_self_reflection.md](lessons/15_self_reflection.md) |
 
 ## Who This Is For
 
@@ -149,6 +152,7 @@ The curriculum is designed to build understanding gradually:
 - Lessons 4-6: Agency (decisions, tools, loops)
 - Lessons 7-10: Intelligence (memory, planning, execution)
 - Lessons 11-12: Observability (evals, telemetry)
+- Lessons 13-15: Advanced (HITL, multi-agent, reflection)
 
 ## Contributing
 

@@ -63,6 +63,11 @@ Here is how the code walks you down that path:
 *   **Phase 4: Observability (Lessons 11-12)**
     *   *Engineering discipline.* Now that you have a complex system, how do you change a prompt without breaking it? You introduce Evals (Regression Testing) and Telemetry to monitor what the loop is doing at runtime.
 
+*   **Phase 5: Advanced Patterns (Lessons 13-15)**
+    *   *Trust but verify.* You add a Human-in-the-Loop (HITL) pause mechanism, demonstrating that explicit state makes manual intervention simple.
+    *   *Specialization.* You orchestrate multiple agents. Instead of one confused mega-prompt, you separate the "planner" from the "doer" using standard Object-Oriented Programming.
+    *   *Self-Reflection.* You add a critique step to the agent loop. The agent evaluates its own output against the original goal and actively corrects its mistakes before returning a final result.
+
 By manually coding each of these steps using simple Python constructs (while loops, try/except blocks, JSON parsing), you strip away the hype. You learn that an AI agent is simply a probabilistic text generator wrapped in rigorous, deterministic software engineering.
 
 ---
@@ -235,4 +240,46 @@ By running these datasets automatically, you transform prompt engineering from a
 ### Telemetry (Lesson 12)
 Because agents operate in a continuous loop—making their own decisions and calling tools asynchronously—standard print statements are completely insufficient for debugging. **Telemetry** introduces runtime observability. By logging structured traces and spans (e.g., tracking an entire multi-step conversation, the duration of an LLM generation, or the success/failure of a tool call), you gain a precise, mechanical view of what the agent is doing in production. You can see exactly where it gets stuck, why it failed, and how long operations take. 
 
+**Spans vs. Traces:**
+To make sense of the loop, telemetry relies on two core concepts:
+*   **A Span** represents a single, discrete operation within the system (e.g., *one* LLM generation, *one* tool execution, or *one* memory retrieval). It captures the start time, duration, input, output, and any errors for that specific action.
+*   **A Trace** represents the entire lifecycle of a user's request. It is a collection of spans tied together by a single `trace_id`. When a multi-step agent fails, you can filter your logs by the trace ID to see the exact sequence of spans that led to the failure, in chronological order.
+
 Together, Evals and Telemetry complete the transition from a fragile AI demo to robust software engineering.
+
+---
+
+## 11. Trust but Verify: Human-in-the-Loop (Lesson 13)
+
+Up to this point, the agent has been fully autonomous. However, when agents interact with sensitive tools (like deleting files, making payments, or sending emails), pure autonomy becomes a liability. Lesson 13 introduces **Human-in-the-Loop (HITL)**.
+
+Because our agent's intent is captured as an explicit JSON data structure *before* execution, intercepting it is simple. The loop pauses, prints the intended action and its reasoning, and waits for a standard human input (e.g., `y/n`). 
+
+This demonstrates that autonomy is a spectrum:
+- **Fully Autonomous:** Loop runs without interruption.
+- **Fully Manual (Chatbot):** Agent suggests one action, stops completely, and waits for a new user prompt.
+- **Supervised (HITL):** Agent loops automatically but yields control at critical decision boundaries.
+
+There is no special framework magic required to pause an agent—just standard programming flow control intercepting the "Decide" and "Act" boundary.
+
+---
+
+## 12. Specialization: Multi-Agent Orchestration (Lesson 14)
+
+A single agent with a massive, catch-all system prompt often suffers from "persona drift"—it forgets instructions, gets confused by competing priorities, and degrades in quality. Lesson 14 solves this through specialization using **Multi-Agent Orchestration**.
+
+Instead of relying on an opaque framework where AI entities chat in a virtual room, multi-agent architecture is shown to be simple Object-Oriented Programming:
+1.  **The Manager Agent:** Uses its system prompt and planning capability to generate a step-by-step list of tasks.
+2.  **The Worker Agent:** Uses a highly focused, narrow system prompt. The manager delegates execution by passing each step into the worker's standard `run()` method.
+
+By segregating system prompts across multiple object instances and using standard loops to pass data between them, you keep context windows small and ensure that the executing agent stays hyper-focused on its immediate task.
+
+---
+
+## 13. Self-Reflection and Course Correction (Lesson 15)
+
+Right now, an agent plans and executes, but if a step succeeds technically but produces a poor outcome, it lacks a formal "critique" phase. Lesson 15 introduces **Self-Reflection**.
+
+By adding an explicit "Reflect" step to the loop (Observe → Decide → Act → **Reflect**), the agent takes a moment to evaluate its own output against the original goal. 
+Before returning the final response, it checks for missing information, hallucinations, or poor formatting. 
+It explicitly outputs a JSON payload deciding whether to accept the result (`"status": "pass"`) or reject it (`"status": "fail"`, `"feedback": "..."`). If it fails, the agent uses its own feedback to generate a revised response. This drastically improves the reliability and quality of autonomous task execution without relying on human intervention.

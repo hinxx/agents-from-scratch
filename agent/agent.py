@@ -15,6 +15,11 @@ Lesson progression:
 08: Planning
 09: Atomic actions
 10: AoT (Atom of Thought)
+11: Evals (No agent.py changes)
+12: Telemetry (No agent.py changes)
+13: Human-in-the-Loop (HITL)
+14: Multi-Agent Orchestration
+15: Self-Reflection
 """
 
 from typing import Any
@@ -497,6 +502,145 @@ Response (JSON only):"""
         
         return execute_graph(graph, execute_action)
     
+    # ============================================================
+    # LESSON 13: Human-in-the-Loop (HITL)
+    # ============================================================
+    
+    def run_hitl_loop(self, user_input: str, max_steps: int = 5):
+        """
+        Run the agent loop but pause for human approval before acting.
+        
+        Lesson 13 version.
+        """
+        self.state.reset()
+        results = []
+        
+        while not self.state.done and self.state.steps < max_steps:
+            action = self.agent_step(user_input)
+            
+            if action:
+                # The HITL Pause (Intercepting before execution)
+                print(f"\n[HITL INTERCEPT] The agent intends to perform: {action.get('action')}")
+                print(f"[HITL INTERCEPT] Reason provided: {action.get('reason')}")
+                approval = input("[HITL INTERCEPT] Do you approve this action? (y/n): ")
+                
+                if approval.lower().strip() != 'y':
+                    print("[HITL INTERCEPT] Action rejected. Terminating loop.")
+                    break
+                
+                results.append(action)
+                
+                if action.get("action") == "done":
+                    self.state.mark_done()
+            else:
+                break
+        
+        return results
+
+    # ============================================================
+    # LESSON 14: Multi-Agent Orchestration
+    # ============================================================
+    
+    def run_multi_agent(self, task: str, worker_agent: 'Agent') -> dict | None:
+        """
+        Manager agent delegates a task to a specialized worker agent.
+        
+        Lesson 14 version.
+        """
+        plan = self.create_plan(task)
+        if not plan or "steps" not in plan:
+            return None
+            
+        results = []
+        
+        # The manager delegates the step-by-step execution to the worker
+        for step in plan["steps"]:
+            worker_response = worker_agent.run(step)
+            results.append({"step": step, "worker_result": worker_response})
+            
+        return {"task": task, "plan": plan, "results": results}
+
+    # ============================================================
+    # LESSON 15: Self-Reflection
+    # ============================================================
+    
+    def reflect_on_output(self, task: str, output: str) -> dict | None:
+        """
+        Evaluate an output against its original task.
+        Lesson 15 version.
+        """
+        prompt = f"""{self.system_prompt}
+
+You are an expert reviewer. Evaluate the following output against the original task.
+
+Task: {task}
+Output: {output}
+
+CRITICAL INSTRUCTIONS:
+1. Respond with ONLY valid JSON
+2. Check for missing requirements, factual errors, or poor formatting
+3. If it perfectly answers the task, status is "pass"
+4. If it needs improvement, status is "fail" and provide specific feedback
+
+Required JSON format:
+{{"status": "pass" or "fail", "feedback": "specific critique or praise"}}
+
+Response (JSON only):"""
+        
+        for attempt in range(3):
+            response = self.llm.generate(prompt, temperature=0.0)
+            parsed = extract_json_from_text(response)
+            
+            if parsed and "status" in parsed and "feedback" in parsed:
+                return parsed
+                
+        return None
+
+    def run_with_reflection(self, task: str, max_revisions: int = 3) -> str:
+        """
+        Generate, reflect, and revise in a loop.
+        Lesson 15 version.
+        """
+        print(f"Task: {task}\n")
+        
+        # 1. Initial Draft
+        current_output = self.simple_generate(task)
+        print(f"[Draft 0]:\n{current_output}\n")
+        
+        for attempt in range(1, max_revisions + 1):
+            # 2. Reflect
+            reflection = self.reflect_on_output(task, current_output)
+            if not reflection:
+                print("[Reflection Failed - Breaking Loop]")
+                break
+                
+            status = reflection.get("status")
+            feedback = reflection.get("feedback")
+            
+            print(f"[Reflection {attempt}]: Status={str(status).upper()}")
+            print(f"Feedback: {feedback}\n")
+            
+            if status == "pass":
+                print("Goal achieved!")
+                return current_output
+                
+            # 3. Revise (Course Correction)
+            revision_prompt = f"""{self.system_prompt}
+
+You need to revise a draft based on reviewer feedback.
+
+Original Task: {task}
+Current Draft: {current_output}
+Reviewer Feedback: {feedback}
+
+Provide a completely revised response that fixes all issues mentioned in the feedback."""
+            
+            current_output = self.simple_generate(revision_prompt)
+            print(f"[Draft {attempt}]:\n{current_output}\n")
+            
+        print("Max revisions reached.")
+        return current_output
+
     # ============================================================
     # MAIN RUN METHOD (evolves across lessons)
     # ============================================================
