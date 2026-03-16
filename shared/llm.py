@@ -10,14 +10,11 @@ It intentionally has no magic:
 Just text in, text out.
 """
 
-from shared.llama_logging import disable_llama_logging
-from llama_cpp import Llama
-
-disable_llama_logging()
+import ollama
 
 class LocalLLM:
     """
-    A minimal wrapper for local LLM inference using llama.cpp.
+    A minimal wrapper for local LLM inference using Ollama.
     
     This class is intentionally simple and grows throughout the lessons.
     """
@@ -33,18 +30,15 @@ class LocalLLM:
         Initialize the local LLM.
         
         Args:
-            model_path: Path to the GGUF model file
+            model_path: Name of the Ollama model (e.g., "llama3.1")
             temperature: Sampling temperature (0.0 = deterministic, 1.0 = creative)
             max_tokens: Maximum tokens to generate per response
             n_ctx: Context window size
         """
-        self.llm = Llama(
-            model_path=model_path,
-            temperature=temperature,
-            n_ctx=n_ctx,
-            verbose=False,
-        )
+        self.model_name = model_path
+        self.default_temperature = temperature
         self.max_tokens = max_tokens
+        self.n_ctx = n_ctx
     
     def generate(self, prompt: str, temperature: float = None, stop: list[str] = None) -> str:
         """
@@ -58,14 +52,19 @@ class LocalLLM:
         Returns:
             Generated text as a string
         """
-        kwargs = {
-            "prompt": prompt,
-            "max_tokens": self.max_tokens,
+        options = {
+            "temperature": temperature if temperature is not None else self.default_temperature,
+            "num_predict": self.max_tokens,
+            "num_ctx": self.n_ctx,
             "stop": stop if stop is not None else ["</s>", "\n\n", "User:", "Assistant:"],
         }
         
-        if temperature is not None:
-            kwargs["temperature"] = temperature
+        print(f"Generating with Ollama model '{self.model_name}' and options: {options}")
         
-        response = self.llm(**kwargs)
-        return response["choices"][0]["text"].strip()
+        response = ollama.generate(
+            model=self.model_name,
+            prompt=prompt,
+            options=options
+        )
+        
+        return response["response"].strip()
