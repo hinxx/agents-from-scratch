@@ -24,6 +24,8 @@ Lesson progression:
 17: Dynamic Tool Creation
 """
 
+import json
+
 from typing import Any
 
 from shared.llm import LocalLLM
@@ -217,12 +219,15 @@ Response (JSON only):"""
         Returns:
             Tool call specification or None if request failed
         """
+        tools_schema = get_tool_schema()
+        schema_str = json.dumps(tools_schema, indent=2)
+        
         prompt = f"""{self.system_prompt}
 
-You are a tool-calling assistant. When asked a math question, you must respond with ONLY valid JSON.
+You are a tool-calling assistant. When asked a question, you must respond with ONLY valid JSON.
 
-Available tool: calculator
-- Parameters: a (number), b (number), operation ("add", "subtract", "multiply", or "divide")
+Available tools and their schemas:
+{schema_str}
 
 CRITICAL INSTRUCTIONS:
 1. Respond with ONLY valid JSON
