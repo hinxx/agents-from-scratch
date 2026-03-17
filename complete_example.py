@@ -90,7 +90,14 @@ def lesson_05_tools():
     if tool_call:
         result = agent.execute_tool_call(tool_call)
         print(f"Tool result: {result}")
-        
+
+    tool_call = agent.request_tool("What is 120 by 1?")
+    print(f"Tool request: {tool_call}")
+
+    if tool_call:
+        result = agent.execute_tool_call(tool_call)
+        print(f"Tool result: {result}")
+
     print("\n--- Testing the new weather tool ---")
     
     weather_call = agent.request_tool("What's the weather like in Tokyo right now?")

@@ -59,7 +59,7 @@ class LocalLLM:
             "stop": stop if stop is not None else ["</s>", "\n\n", "User:", "Assistant:"],
         }
         
-        print(f"Generating with Ollama model '{self.model_name}' and options: {options}")
+        print(f"Prompt:\n{prompt}\n")
         
         response = ollama.generate(
             model=self.model_name,
