@@ -72,6 +72,19 @@ Here is how the code walks you down that path:
 
 By manually coding each of these steps using simple Python constructs (while loops, try/except blocks, JSON parsing), you strip away the hype. You learn that an AI agent is simply a probabilistic text generator wrapped in rigorous, deterministic software engineering.
 
+### Architectural Rule of Thumb: Tools vs. New Agents
+A common architectural dilemma when building these systems is deciding whether to give an existing agent a new **Tool** or to create an entirely **New Agent**. Here is the criteria:
+
+**Add a Tool when:**
+*   **The action is deterministic:** You need the agent to interact with an API, search a database, or run a calculation.
+*   **The persona remains the same:** The action naturally fits the agent's current job description.
+*   **It is a discrete capability:** The task is just a means to an end within the current workflow.
+
+**Implement a New Agent when:**
+*   **Mindsets conflict (Persona Drift):** The new task requires a fundamentally different mindset. For example, a "Creator" agent generates ideas freely, while a "Reviewer" agent must be strictly critical. Combining them makes the model confused and mediocre at both.
+*   **System prompts become bloated:** If you find yourself writing "If doing X, act like this; if doing Y, strictly follow these 20 completely different rules," your prompt is too complex. Split the instructions across two distinct agents.
+*   **Context needs isolation:** If one task requires reading 50 pages of raw documentation, and the next task only needs a 3-sentence summary to make a decision, hand the summary to a new agent so its context window isn't polluted by the raw data.
+
 ---
 
 ## 5. Technical Deep Dive: The "Observe, Decide, Act" Loop (Lesson 6)
