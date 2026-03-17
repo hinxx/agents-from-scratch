@@ -84,6 +84,22 @@ def lesson_05_tools():
         result = agent.execute_tool_call(tool_call)
         print(f"Tool result: {result}")
 
+    tool_call = agent.request_tool("What is 69 times 2?")
+    print(f"Tool request: {tool_call}")
+
+    if tool_call:
+        result = agent.execute_tool_call(tool_call)
+        print(f"Tool result: {result}")
+        
+    print("\n--- Testing the new weather tool ---")
+    
+    weather_call = agent.request_tool("What's the weather like in Tokyo right now?")
+    print(f"Tool request: {weather_call}")
+
+    if weather_call:
+        weather_result = agent.execute_tool_call(weather_call)
+        print(f"Tool result: {weather_result}")
+
 
 def lesson_06_agent_loop():
     """Lesson 06: Agent loop"""
@@ -97,13 +113,20 @@ def lesson_06_agent_loop():
     print("The agent refines its understanding step by step and may repeat analysis")
     print("before converging on a clearer explanation.\n")
     
-    results = agent.run_loop("Help me understand loops", max_steps=3)
+    # A query requiring multiple tool uses
+    query = "What is the weather in Tokyo, and what is 50 * 3?"
+    print(f"User Request: '{query}'\n")
+    
+    results = agent.run_loop(query, max_steps=4)
     
     for i, result in enumerate(results, 1):
         print(f"Iteration {i}:")
         action = result.get("action", "unknown")
         reason = result.get("reason", "No reason provided")
+        arguments = result.get("arguments", {})
         print(f"  Action: {action}")
+        if arguments:
+            print(f"  Arguments: {arguments}")
         print(f"  Reason: {reason}")
         if i < len(results):
             print()

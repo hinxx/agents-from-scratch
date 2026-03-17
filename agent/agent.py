@@ -279,6 +279,8 @@ Response (JSON only):"""
             Action decision or None if step failed
         """
         state_dict = self.state.to_dict()
+        tools_schema = get_tool_schema()
+        schema_str = json.dumps(tools_schema, indent=2)
         
         prompt = f"""{self.system_prompt}
 
@@ -286,17 +288,24 @@ You are an agent. You must decide the next action and respond with ONLY valid JS
 
 Current state: steps={state_dict.get('steps', 0)}, done={state_dict.get('done', False)}
 
-Available actions: analyze, research, summarize, answer, done
+Available actions: 
+1. Use a tool from the schema below (use the tool name as the action)
+2. "answer" (to respond to the user)
+3. "done" (when the task is complete)
+
+Tools schema:
+{schema_str}
 
 CRITICAL INSTRUCTIONS:
 1. Respond with ONLY valid JSON
 2. No explanations, no markdown, no other text
 3. Start your response with {{ and end with }}
+4. Do NOT use 'answer' or 'done' until you have fulfilled ALL parts of the user's request.
 
 Required JSON format:
-{{"action": "action_name", "reason": "explanation"}}
+{{"action": "tool_name_or_action", "arguments": {{}}, "reason": "explanation"}}
 
-User input: {user_input}
+Observation: {user_input}
 
 Response (JSON only):"""
         
@@ -307,6 +316,8 @@ Response (JSON only):"""
             if parsed and "action" in parsed:
                 if "reason" not in parsed:
                     parsed["reason"] = f"Taking action: {parsed['action']}"
+                if "arguments" not in parsed:
+                    parsed["arguments"] = {}
                 self.state.increment_step()
                 return parsed
         
@@ -326,15 +337,36 @@ Response (JSON only):"""
         self.state.reset()
         results = []
         
+        # We need a growing observation context so the agent can see tool results
+        current_observation = f"User Request: {user_input}"
+        valid_tools = list(get_tool_schema().keys())
+        
         while not self.state.done and self.state.steps < max_steps:
-            action = self.agent_step(user_input)
+            action = self.agent_step(current_observation)
             
             if action:
                 results.append(action)
+                action_name = action.get("action")
                 
-                # Simple termination condition
-                if action.get("action") == "done":
+                # 1. Check if it's a termination action
+                if action_name in ["done", "answer"]:
                     self.state.mark_done()
+                
+                # 2. Check if it's a tool execution
+                elif action_name in valid_tools:
+                    try:
+                        tool_result = self.execute_tool_call({
+                            "tool": action_name,
+                            "arguments": action.get("arguments", {})
+                        })
+                        # Append the tool's output so the agent "observes" it next loop
+                        current_observation += f"\nTool '{action_name}' Result: {tool_result}"
+                    except Exception as e:
+                        current_observation += f"\nTool '{action_name}' Error: {e}"
+                
+                # 3. Fallback
+                else:
+                    current_observation += f"\nAction '{action_name}' logged."
             else:
                 break
         

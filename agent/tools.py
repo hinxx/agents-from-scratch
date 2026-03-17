@@ -33,6 +33,32 @@ def calculator(a: float, b: float, operation: str = "add") -> float:
     return operations[operation](a, b)
 
 
+def get_weather(location: str) -> str:
+    """
+    Get the current weather for a location.
+    
+    Args:
+        location: The city and state/country
+        
+    Returns:
+        A string describing the weather
+    """
+    # In a real application, you would call a weather API (like OpenWeatherMap) here.
+    # For this example, we return a mock response based on a few hardcoded cities.
+    mock_weather = {
+        "london": "Rainy, 15°C",
+        "tokyo": "Sunny, 22°C",
+        "new york": "Cloudy, 18°C",
+        "paris": "Clear, 20°C"
+    }
+    
+    for city, weather in mock_weather.items():
+        if city in location.lower():
+            return weather
+            
+    return f"Sunny, 20°C (Mock weather for {location})"
+
+
 def get_tool_schema() -> dict:
     """
     Get the schema for available tools.
@@ -55,6 +81,16 @@ def get_tool_schema() -> dict:
                 }
             },
             "required": ["a", "b"]
+        },
+        "get_weather": {
+            "description": "Get the current weather for a given location",
+            "parameters": {
+                "location": {
+                    "type": "string",
+                    "description": "The city and state, e.g., San Francisco, CA"
+                }
+            },
+            "required": ["location"]
         }
     }
 
@@ -75,6 +111,7 @@ def execute_tool(tool_name: str, arguments: dict) -> Any:
     """
     tools = {
         "calculator": calculator,
+        "get_weather": get_weather,
     }
     
     if tool_name not in tools:
