@@ -1,5 +1,5 @@
 """
-LocalLLM - A simple wrapper around llama-cpp-python.
+LocalLLM - A simple wrapper around ollama.
 
 This class provides a minimal interface to interact with local language models.
 It intentionally has no magic:
@@ -59,7 +59,8 @@ class LocalLLM:
             "stop": stop if stop is not None else ["</s>", "\n\n", "User:", "Assistant:"],
         }
         
-        print(f"Prompt:\n{prompt}\n")
+        print(f"Generating with Ollama model '{self.model_name}' and options: {options}")
+        print(f"Prompt: {prompt}")
         
         response = ollama.generate(
             model=self.model_name,
